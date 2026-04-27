@@ -1,0 +1,7 @@
+POST http://localhost:8080/order
+Content-Type: application/json
+
+{
+    "items" : ["Burger", "Fries"],
+    "total": 18.50
+}
