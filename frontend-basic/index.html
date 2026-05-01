@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Restaurant Menu</title>
+</head>
+<body>
+
+    <h1>Menu</h1>
+
+    <div>
+        <h3>Burger - $10</h3>
+        <button onclick="addToCart('Burger', 10)">Add to Cart</button>
+    </div>
+
+    <div>
+        <h3>Fries - $5</h3>
+        <button onclick="addToCart('Fries', 5)">Add to Cart</button>
+    </div>
+
+    <h2>Cart</h2>
+    <ul id="cart-list"></ul>
+
+    <button onclick="checkout()">Checkout</button>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
