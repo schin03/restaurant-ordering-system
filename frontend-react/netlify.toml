@@ -1,0 +1,31 @@
+# Netlify build & CDN / browser caching
+# https://docs.netlify.com/configure-builds/overview/
+# https://docs.netlify.com/routing/headers/
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Client-side routing (Vite + React Router): serve index.html for navigations.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Hashed JS/CSS from Vite — filename changes each deploy; safe to cache indefinitely.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Images copied from public/ — same URL until you redeploy with new files.
+# 30 days balances bandwidth savings vs seeing updates after you replace an image in place.
+[[headers]]
+  for = "/menu-photos/*"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
+
+[[headers]]
+  for = "/popular-dishes/*"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
