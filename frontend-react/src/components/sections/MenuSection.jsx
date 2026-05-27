@@ -36,6 +36,7 @@ import {
   FieldRoot,
   Flex,
   Heading,
+  HStack,
   IconButton,
   Image,
   Input,
@@ -248,10 +249,6 @@ function MenuItemCard({
   const hideInlineThumb =
     showPhotoInline && hasPhoto && photoExpandInline && photoOpen;
 
-  // cart button pop-up states
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
-
   const activatePhoto = () => {
     if (!hasPhoto) return;
     if (photoExpandInline) setPhotoOpen((o) => !o);
@@ -263,6 +260,49 @@ function MenuItemCard({
   //       activatePhoto()
   //     }
   //   }
+
+  // cart button pop-up states
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [cartItems, setCartItems] = useState({});
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const [quantities, setQuantities] = useState({});
+  
+
+  const increment = (index) => {
+    setQuantities((prev) => ({
+      ...prev,
+      [index]: (prev[index] || 0) + 1,
+    }));
+  };
+
+  const decrement = (index) => {
+    setQuantities((prev) => ({
+      ...prev,
+      [index]: Math.max((prev[index] || 0) - 1, 0),
+    }));
+  };
+
+  const totalPrice = priceRows.reduce((total, row, index) => {
+    const numPrice = parseFloat(row.replace(/\(.*?\)/, "").replace("$", ""));
+    return total + numPrice * (quantities[index] || 0);
+  }, 0);
+
+  useEffect(() => {
+    if (selectedItem) {
+      const init = {};
+      const sizes = selectedItem.sizes?.length
+        ? selectedItem.sizes
+        : [{ name: "Regular" }];
+
+      sizes.forEach((size) => {
+        init[size.name] = 0;
+      });
+
+      setQuantities(init);
+    }
+  }, [selectedItem]);
+
   return (
     <>
       <Box
@@ -335,6 +375,7 @@ function MenuItemCard({
             />
           </Box>
         ) : null}
+        {/* if there is more than 1 size listed */}
         {multiSizeLayout ? (
           <Flex
             justify="space-between"
@@ -440,6 +481,7 @@ function MenuItemCard({
           </Flex>
         ) : (
           <>
+            {/* if there only 1 size listed*/}
             <Flex
               align="center"
               justify="space-between"
@@ -544,11 +586,11 @@ function MenuItemCard({
           <Button
             size="sm"
             onClick={() => {
-              setSelectedItem(zh, en, price);
+              setSelectedItem(en, priceRows);
               setIsCartOpen(true);
             }}
           >
-            Test Cart
+            Add to Cart
           </Button>
           {hasPhoto && (
             <Button
@@ -594,6 +636,49 @@ function MenuItemCard({
                   </IconButton>
                 </DialogCloseTrigger>
               </DialogHeader>
+              <DialogBody>
+                <Flex direction="column" gap={4}>
+                  {priceRows.map((row, index) => {
+                    const isSingleSize = priceRows.length === 1;
+
+                    const sizeMatch = row.match(/\((.*?)\)/);
+
+                    const sizeLabel = isSingleSize ? "Regular" : sizeMatch?.[1];
+
+                    const price = row.replace(/\((.*?)\)/, "").trim();
+
+                    return (
+                      <HStack
+                        key={index}
+                        justify="space-between"
+                        align="center"
+                        mb={4}
+                      >
+                        <Box key={index} mb={4}>
+                          <Text fontWeight="bold">
+                            {en} ({sizeLabel})
+                          </Text>
+
+                          <Text>{price}</Text>
+                        </Box>
+                        <HStack mt={2}>
+                          <Button onClick={() => decrement(index)}>-</Button>
+                          <Text>{quantities[index] || 0}</Text>
+                          <Button onClick={() => increment(index)}>+</Button>
+                        </HStack>
+                      </HStack>
+                    );
+                  })}
+                </Flex>
+                <Flex justify="flex-end" mt={6}>
+                  <HStack>
+                    <Text fontWeight="bold">
+                      Total: ${totalPrice.toFixed(2)}
+                    </Text>
+                    <Button colorScheme="green">Add to Cart</Button>
+                  </HStack>
+                </Flex>
+              </DialogBody>
             </DialogContent>
           </DialogPositioner>
         </DialogRoot>
