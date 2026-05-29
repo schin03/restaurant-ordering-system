@@ -263,11 +263,10 @@ function MenuItemCard({
 
   // cart button pop-up states
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [cartItems, setCartItems] = useState({});
+  const [cartItems, setCartItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
 
   const [quantities, setQuantities] = useState({});
-  
 
   const increment = (index) => {
     setQuantities((prev) => ({
@@ -279,7 +278,7 @@ function MenuItemCard({
   const decrement = (index) => {
     setQuantities((prev) => ({
       ...prev,
-      [index]: Math.max((prev[index] || 0) - 1, 0),
+      [index]: Math.max(0, (prev[index] || 0) - 1),
     }));
   };
 
@@ -287,6 +286,18 @@ function MenuItemCard({
     const numPrice = parseFloat(row.replace(/\(.*?\)/, "").replace("$", ""));
     return total + numPrice * (quantities[index] || 0);
   }, 0);
+
+  const resetCartDialog = () => {
+    const reset = {};
+
+    priceRows.forEach((row, index) => {
+      reset[index] = 0;
+    });
+
+    setQuantities(reset);
+
+    setIsCartOpen(false);
+  };
 
   useEffect(() => {
     if (selectedItem) {
@@ -302,6 +313,10 @@ function MenuItemCard({
       setQuantities(init);
     }
   }, [selectedItem]);
+
+  useEffect(() => {
+    console.log("UPDATED CART: ", cartItems);
+  }, [cartItems]);
 
   return (
     <>
@@ -607,7 +622,11 @@ function MenuItemCard({
 
         <DialogRoot
           open={isCartOpen}
-          onOpenChange={(details) => setIsCartOpen(details.open)}
+          onOpenChange={(details) => {
+            if (!details.open) {
+                resetCartDialog();
+            }
+          }}
         >
           <DialogBackdrop />
           <DialogPositioner>
@@ -675,7 +694,61 @@ function MenuItemCard({
                     <Text fontWeight="bold">
                       Total: ${totalPrice.toFixed(2)}
                     </Text>
-                    <Button colorScheme="green">Add to Cart</Button>
+                    <Button
+                      colorScheme="green"
+                      onClick={() => {
+                        const itemsToAdd = priceRows
+                          .map((row, index) => {
+                            const isSingleSize = priceRows.length === 1;
+
+                            const sizeMatch = row.match(/\((.*?)\)/);
+
+                            const sizeLabel = isSingleSize
+                              ? "Regular"
+                              : sizeMatch?.[1];
+
+                            const cleanedPrice = parseFloat(
+                              row.replace(/\((.*?)\)/, "").replace("$", "")
+                            );
+
+                            const quantity = quantities[index] || 0;
+
+                            if (quantity <= 0) return null;
+
+                            return {
+                              id: `${en}-${sizeLabel}`,
+                              en,
+                              zh,
+                              size: sizeLabel,
+                              price: cleanedPrice,
+                              quantity,
+                            };
+                          })
+                          .filter(Boolean);
+
+                        setCartItems((prev) => {
+                          const updated = [...prev];
+                          itemsToAdd.forEach((newItem) => {
+                            const existing = updated.find(
+                              (item) => item.id === newItem.id
+                            );
+
+                            if (existing) {
+                              existing.quantity += newItem.quantity;
+                            } else {
+                              updated.push(newItem);
+                            }
+                          });
+
+                          return updated;
+                        });
+
+                        resetCartDialog();
+                      }}
+                    >
+                      Add to Cart
+                    </Button>
+                    <Text>{JSON.stringify(cartItems)}</Text>
                   </HStack>
                 </Flex>
               </DialogBody>
