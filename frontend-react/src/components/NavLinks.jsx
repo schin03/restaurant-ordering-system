@@ -73,7 +73,7 @@ export function NavLinks({
       {link("/menu", "Menu", MdRestaurantMenu)}
       {link("/#order-options", "Order Options", MdOutlineTakeoutDining)}
       {link("/#location", "Location & Hours", MdLocationOn)}
-      {link("/#cart", "Cart", MdShoppingCart)}
+      {link("/cart", "Cart", MdShoppingCart)}
     </Stack>
   );
 }

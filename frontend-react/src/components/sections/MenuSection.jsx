@@ -314,10 +314,6 @@ function MenuItemCard({
     }
   }, [selectedItem]);
 
-  useEffect(() => {
-    console.log("UPDATED CART: ", cartItems);
-  }, [cartItems]);
-
   return (
     <>
       <Box
@@ -607,7 +603,7 @@ function MenuItemCard({
           >
             Add to Cart
           </Button>
-          {hasPhoto && (
+          { hasPhoto && (
             <Button
               size="sm"
               onClick={(e) => {
@@ -896,19 +892,29 @@ function DinnerComboStyleOption({ opt, headlineEn, dense, cardRadius }) {
   const dialogTitle = `${headlineEn} — ${opt.label}`;
   const iconSize = dense ? 20 : 22;
 
-  const openPhoto = () => {
-    if (hasPhoto) setPhotoOpen(true);
-  };
-  const onKeyDown = (e) => {
+  const activatePhoto = () => {
     if (!hasPhoto) return;
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      openPhoto();
-    }
-  };
+    else setPhotoOpen(true);
+  }
+
+  // Removed and replaced with same structure as above to maintain consistency
+  // const openPhoto = () => {
+  //   if (hasPhoto) setPhotoOpen(true);
+  // };
+  // const onKeyDown = (e) => {
+  //   if (!hasPhoto) return;
+  //   if (e.key === "Enter" || e.key === " ") {
+  //     e.preventDefault();
+  //     openPhoto();
+  //   }
+  // };
 
   return (
     <Box
+      // Removed 'entire box' click functionality
+      // onClick={hasPhoto ? openPhoto : undefined}
+      // onKeyDown={hasPhoto ? onKeyDown : undefined}
+      // role={hasPhoto ? "button" : undefined}
       bg="bg"
       borderRadius={cardRadius}
       borderWidth="1px"
@@ -916,13 +922,12 @@ function DinnerComboStyleOption({ opt, headlineEn, dense, cardRadius }) {
       boxShadow="sm"
       p={{ base: dense ? 3 : 5, md: dense ? 4 : 6 }}
       cursor={hasPhoto ? "pointer" : undefined}
-      onClick={hasPhoto ? openPhoto : undefined}
+      
       onMouseEnter={
         hasPhoto ? () => prefetchMenuPhoto(opt.imageSrc) : undefined
       }
       onFocus={hasPhoto ? () => prefetchMenuPhoto(opt.imageSrc) : undefined}
-      onKeyDown={hasPhoto ? onKeyDown : undefined}
-      role={hasPhoto ? "button" : undefined}
+      
       tabIndex={hasPhoto ? 0 : undefined}
       aria-label={hasPhoto ? `View photo: ${dialogTitle}` : undefined}
       transition={
@@ -1013,6 +1018,24 @@ function DinnerComboStyleOption({ opt, headlineEn, dense, cardRadius }) {
           </DialogPositioner>
         </DialogRoot>
       ) : null}
+      
+      <Flex mt={3} gap={2} wrap="wrap">
+        <Button
+          size="sm"
+          >
+          Add to Cart
+        </Button>
+        {hasPhoto && (
+          <Button
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              activatePhoto();
+            }}>
+            View Photo
+          </Button>
+        )}
+      </Flex>
     </Box>
   );
 }
