@@ -57,7 +57,7 @@ import {
 import { PiPepperLight } from "react-icons/pi";
 import { MENU_SECTION_NOTES, MENU_SECTIONS } from "../../data/menuItems";
 import { resolveMenuItemImage } from "../../utils/menuPhotos";
-
+import { useCart } from "../../context/CartContext";
 /**
  * English search aliases: `w/` ↔ "with", `&` ↔ "and" (menu copy uses shorthand).
  * Order: normalize `w/` before `&` so strings like "Beef & Ginger w/ …" stay correct.
@@ -263,7 +263,7 @@ function MenuItemCard({
 
   // cart button pop-up states
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [cartItems, setCartItems] = useState([]);
+  const { cartItems, setCartItems } = useCart();
   const [selectedItem, setSelectedItem] = useState(null);
 
   const [quantities, setQuantities] = useState({});
@@ -744,7 +744,6 @@ function MenuItemCard({
                     >
                       Add to Cart
                     </Button>
-                    <Text>{JSON.stringify(cartItems)}</Text>
                   </HStack>
                 </Flex>
               </DialogBody>
