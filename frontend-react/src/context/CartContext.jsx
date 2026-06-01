@@ -5,19 +5,19 @@ const CartContext = createContext();
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);
 
-  const incrementQuantity = (index) => {
+  const incrementQuantity = (id) => {
     setCartItems((prev) =>
       prev.map((item) =>
-        item.index === index ? { ...item, quantity: item.quantity + 1 } : item
+        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
       )
     );
   };
 
-  const decrementQuantity = (index) => {
+  const decrementQuantity = (id) => {
     setCartItems((prev) =>
       prev
         .map((item) =>
-          item.index === index ? { ...item, quantity: item.quantity - 1 } : item
+          item.id === id ? { ...item, quantity: item.quantity - 1 } : item
         )
         .filter((item) => item.quantity > 0)
     );
