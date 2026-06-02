@@ -1,4 +1,4 @@
-import { Box, HStack, IconButton, VStack,  } from "@chakra-ui/react";
+import { Box, HStack, IconButton, VStack } from "@chakra-ui/react";
 import {
   MdHome,
   MdLocationOn,
@@ -6,7 +6,8 @@ import {
   MdRestaurantMenu,
   MdShoppingCart,
 } from "react-icons/md";
-import { Link as RouterLink } from "react-router-dom";
+import { useCart } from "../context/CartContext";
+import { Link as RouterLink, useLocation } from "react-router-dom";
 
 const navLinkStyles = {
   px: 3,
@@ -43,25 +44,50 @@ export function NavLinks({
       w={direction === "column" ? "full" : undefined}
       justifyContent={direction === "column" ? "flex-start" : undefined}
     >
+      {/* MOBILE (column): icon + text */}
       {direction === "column" && Icon ? (
         <HStack gap={3} w="full">
-          <Box
-            as="span"
-            color="green.700"
-            lineHeight={0}
-            flexShrink={0}
-            aria-hidden
-          >
+          <Box as="span" color="green.700" lineHeight={0} flexShrink={0}>
             <Icon size={22} />
           </Box>
           {label}
         </HStack>
       ) : (
-        label
+        <>
+          {/* DESKTOP SPECIAL CASE: cart icon only */}
+          {to === "/cart" && Icon ? (
+            <Box
+              position="relative"
+              display="inline-flex"
+              as="span"
+              lineHeight={0}
+            >
+              <Icon size={22} />
+              {hasItems && !isCartPage && (
+                <Box
+                  position="absolute"
+                  bottom="-2px"
+                  right="-2px"
+                  width="8px"
+                  height="8px"
+                  borderRadius="50%"
+                  bg="green.500"
+                />
+              )}
+            </Box>
+          ) : (
+            label
+          )}
+        </>
       )}
     </Box>
   );
 
+  const { cartItems } = useCart();
+  const hasItems = cartItems.length > 0;
+  const location = useLocation();
+  const isCartPage = location.pathname === "/cart";
+  
   return (
     <Stack
       gap={gap}

@@ -13,11 +13,13 @@ import { useCart } from "../../context/CartContext";
 
 export function CartSection() {
   const { cartItems, incrementQuantity, decrementQuantity } = useCart();
+  
 
   const total = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
+  
 
   return (
     <Box as="section" py={{ base: 12, md: 16 }} px={4} bg="bg" minH="100vh">
