@@ -57,7 +57,7 @@ import {
 import { PiPepperLight } from "react-icons/pi";
 import { MENU_SECTION_NOTES, MENU_SECTIONS } from "../../data/menuItems";
 import { resolveMenuItemImage } from "../../utils/menuPhotos";
-
+import { useCart } from "../../context/CartContext";
 /**
  * English search aliases: `w/` ↔ "with", `&` ↔ "and" (menu copy uses shorthand).
  * Order: normalize `w/` before `&` so strings like "Beef & Ginger w/ …" stay correct.
@@ -263,11 +263,10 @@ function MenuItemCard({
 
   // cart button pop-up states
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [cartItems, setCartItems] = useState({});
+  const { cartItems, setCartItems } = useCart();
   const [selectedItem, setSelectedItem] = useState(null);
 
   const [quantities, setQuantities] = useState({});
-  
 
   const increment = (index) => {
     setQuantities((prev) => ({
@@ -279,7 +278,7 @@ function MenuItemCard({
   const decrement = (index) => {
     setQuantities((prev) => ({
       ...prev,
-      [index]: Math.max((prev[index] || 0) - 1, 0),
+      [index]: Math.max(0, (prev[index] || 0) - 1),
     }));
   };
 
@@ -287,6 +286,18 @@ function MenuItemCard({
     const numPrice = parseFloat(row.replace(/\(.*?\)/, "").replace("$", ""));
     return total + numPrice * (quantities[index] || 0);
   }, 0);
+
+  const resetCartDialog = () => {
+    const reset = {};
+
+    priceRows.forEach((row, index) => {
+      reset[index] = 0;
+    });
+
+    setQuantities(reset);
+
+    setIsCartOpen(false);
+  };
 
   useEffect(() => {
     if (selectedItem) {
@@ -592,7 +603,7 @@ function MenuItemCard({
           >
             Add to Cart
           </Button>
-          {hasPhoto && (
+          { hasPhoto && (
             <Button
               size="sm"
               onClick={(e) => {
@@ -607,7 +618,11 @@ function MenuItemCard({
 
         <DialogRoot
           open={isCartOpen}
-          onOpenChange={(details) => setIsCartOpen(details.open)}
+          onOpenChange={(details) => {
+            if (!details.open) {
+                resetCartDialog();
+            }
+          }}
         >
           <DialogBackdrop />
           <DialogPositioner>
@@ -675,7 +690,60 @@ function MenuItemCard({
                     <Text fontWeight="bold">
                       Total: ${totalPrice.toFixed(2)}
                     </Text>
-                    <Button colorScheme="green">Add to Cart</Button>
+                    <Button
+                      colorScheme="green"
+                      onClick={() => {
+                        const itemsToAdd = priceRows
+                          .map((row, index) => {
+                            const isSingleSize = priceRows.length === 1;
+
+                            const sizeMatch = row.match(/\((.*?)\)/);
+
+                            const sizeLabel = isSingleSize
+                              ? "Regular"
+                              : sizeMatch?.[1];
+
+                            const cleanedPrice = parseFloat(
+                              row.replace(/\((.*?)\)/, "").replace("$", "")
+                            );
+
+                            const quantity = quantities[index] || 0;
+
+                            if (quantity <= 0) return null;
+
+                            return {
+                              id: `${en}-${sizeLabel}`,
+                              en,
+                              zh,
+                              size: sizeLabel,
+                              price: cleanedPrice,
+                              quantity,
+                            };
+                          })
+                          .filter(Boolean);
+
+                        setCartItems((prev) => {
+                          const updated = [...prev];
+                          itemsToAdd.forEach((newItem) => {
+                            const existing = updated.find(
+                              (item) => item.id === newItem.id
+                            );
+
+                            if (existing) {
+                              existing.quantity += newItem.quantity;
+                            } else {
+                              updated.push(newItem);
+                            }
+                          });
+
+                          return updated;
+                        });
+
+                        resetCartDialog();
+                      }}
+                    >
+                      Add to Cart
+                    </Button>
                   </HStack>
                 </Flex>
               </DialogBody>
@@ -823,19 +891,29 @@ function DinnerComboStyleOption({ opt, headlineEn, dense, cardRadius }) {
   const dialogTitle = `${headlineEn} — ${opt.label}`;
   const iconSize = dense ? 20 : 22;
 
-  const openPhoto = () => {
-    if (hasPhoto) setPhotoOpen(true);
-  };
-  const onKeyDown = (e) => {
+  const activatePhoto = () => {
     if (!hasPhoto) return;
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      openPhoto();
-    }
-  };
+    else setPhotoOpen(true);
+  }
+
+  // Removed and replaced with same structure as above to maintain consistency
+  // const openPhoto = () => {
+  //   if (hasPhoto) setPhotoOpen(true);
+  // };
+  // const onKeyDown = (e) => {
+  //   if (!hasPhoto) return;
+  //   if (e.key === "Enter" || e.key === " ") {
+  //     e.preventDefault();
+  //     openPhoto();
+  //   }
+  // };
 
   return (
     <Box
+      // Removed 'entire box' click functionality
+      // onClick={hasPhoto ? openPhoto : undefined}
+      // onKeyDown={hasPhoto ? onKeyDown : undefined}
+      // role={hasPhoto ? "button" : undefined}
       bg="bg"
       borderRadius={cardRadius}
       borderWidth="1px"
@@ -843,13 +921,12 @@ function DinnerComboStyleOption({ opt, headlineEn, dense, cardRadius }) {
       boxShadow="sm"
       p={{ base: dense ? 3 : 5, md: dense ? 4 : 6 }}
       cursor={hasPhoto ? "pointer" : undefined}
-      onClick={hasPhoto ? openPhoto : undefined}
+      
       onMouseEnter={
         hasPhoto ? () => prefetchMenuPhoto(opt.imageSrc) : undefined
       }
       onFocus={hasPhoto ? () => prefetchMenuPhoto(opt.imageSrc) : undefined}
-      onKeyDown={hasPhoto ? onKeyDown : undefined}
-      role={hasPhoto ? "button" : undefined}
+      
       tabIndex={hasPhoto ? 0 : undefined}
       aria-label={hasPhoto ? `View photo: ${dialogTitle}` : undefined}
       transition={
@@ -940,6 +1017,24 @@ function DinnerComboStyleOption({ opt, headlineEn, dense, cardRadius }) {
           </DialogPositioner>
         </DialogRoot>
       ) : null}
+      
+      <Flex mt={3} gap={2} wrap="wrap">
+        <Button
+          size="sm"
+          >
+          Add to Cart
+        </Button>
+        {hasPhoto && (
+          <Button
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              activatePhoto();
+            }}>
+            View Photo
+          </Button>
+        )}
+      </Flex>
     </Box>
   );
 }
