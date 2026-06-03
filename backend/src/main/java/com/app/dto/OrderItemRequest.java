@@ -18,19 +18,19 @@ public class OrderItemRequest {
         this.id = id;
     }
 
-    public String getEnglishName() {
+    public String getEn() {
         return en;
     }
 
-    public void setEnglishName(String s) {
+    public void setEn(String s) {
         en = s;
     }
 
-    public String getChineseName() {
+    public String getZh() {
         return zh;
     }
 
-    public void setChineseName(String s) {
+    public void setZh(String s) {
         zh = s;
     } 
 

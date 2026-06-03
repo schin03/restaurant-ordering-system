@@ -8,21 +8,31 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.app.dto.OrderRequest;
-
+import com.app.service.OrderService;
 
 @RestController
 @RequestMapping("/api/orders")
 @CrossOrigin(origins = "http://localhost:5173")
 public class OrderController {
     
+    private final OrderService orderService;
+
+    public OrderController(OrderService os) {
+        orderService = os;
+    }
+
     @PostMapping
     public String createOrder(@RequestBody OrderRequest orderRequest) {
+        double total = orderService.calculateTotal(orderRequest);
+        
         System.out.println("ORDER RECEIVED");
         System.out.println(orderRequest.getCustomerName());
 
         for (var item : orderRequest.getItems()) {
-            System.out.println(item.getEnglishName());
+            System.out.println(item.getEn());
         }
+
+        System.out.println("TOTAL: " + total);
 
         return "Order received";
     }
