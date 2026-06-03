@@ -21,7 +21,7 @@ public class OrderController {
         System.out.println(orderRequest.getCustomerName());
 
         for (var item : orderRequest.getItems()) {
-            System.out.println(item.getName());
+            System.out.println(item.getEnglishName());
         }
 
         return "Order received";

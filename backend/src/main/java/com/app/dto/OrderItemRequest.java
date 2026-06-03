@@ -1,18 +1,45 @@
 package com.app.dto;
 
 public class OrderItemRequest {
-    private String name;
+    private String id;
+    private String en;
+    private String zh;
+    private String size;
     private int quantity;
     private double price;
 
     public OrderItemRequest() {}
 
-    public String getName() {
-        return name;
+    public String getId() {
+        return id;
     }
 
-    public void setName(String s) {
-        name = s;
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getEnglishName() {
+        return en;
+    }
+
+    public void setEnglishName(String s) {
+        en = s;
+    }
+
+    public String getChineseName() {
+        return zh;
+    }
+
+    public void setChineseName(String s) {
+        zh = s;
+    } 
+
+    public String getSize() {
+        return size;
+    }
+
+    public void setSize(String s) {
+        size = s;
     }
 
     public int getQuantity() {
