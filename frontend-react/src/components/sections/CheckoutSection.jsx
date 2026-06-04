@@ -41,6 +41,25 @@ export function CheckoutSection() {
     console.log(result);
   };
 
+  const createPaymentIntent = async () => {
+    const res = await fetch(
+      "http://localhost:8080/api/payments/create-intent",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: 2500,
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    console.log(data.clientSecret);
+  };
+
   return (
     <Box as="section" py={{ base: 12, md: 16 }} px={4} bg="bg" minH="100vh">
       <Container maxW="3xl">
@@ -95,6 +114,8 @@ export function CheckoutSection() {
               >
                 Submit Order
               </Button>
+
+              <Button onClick={createPaymentIntent}>Test Stripe</Button>
             </VStack>
           </Box>
         </VStack>
