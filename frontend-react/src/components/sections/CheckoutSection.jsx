@@ -12,11 +12,17 @@ import {
 
 import { useCart } from "../../context/CartContext";
 
+import  { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+
 export function CheckoutSection() {
   const { cartItems } = useCart();
 
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
+
+  const stripe = useStripe();
+  const elements = useElements();
+
 
   const submitOrder = async () => {
     const orderData = {
@@ -50,15 +56,36 @@ export function CheckoutSection() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          amount: 2500,
+          items: cartItems,
         }),
       }
     );
 
     const data = await res.json();
 
+    const result = await stripe.confirmCardPayment(
+        data.clientSecret, {
+            payment_method: {
+                card: elements.getElement(CardElement),
+            }
+        }
+    );
+
+    if (result.error) {
+        console.log(result.error.message);
+    } else {
+        if (result.paymentIntent.status === "succeeded") {
+            console.log("PAYMENT SUCCESS");
+            submitOrder();
+        }
+    }
+
     console.log(data.clientSecret);
   };
+
+  const handleCheckout = async () => {
+    createPaymentIntent();
+  }
 
   return (
     <Box as="section" py={{ base: 12, md: 16 }} px={4} bg="bg" minH="100vh">
@@ -71,7 +98,7 @@ export function CheckoutSection() {
 
           {/* FORM CARD */}
           <Box
-            bg="bg"
+            bg="gray.300"
             borderRadius="lg"
             borderWidth="1px"
             borderColor="border"
@@ -104,18 +131,25 @@ export function CheckoutSection() {
                   onChange={(e) => setPhone(e.target.value)}
                 />
               </Box>
-
+              <Box
+                p={4}
+                borderWidth="1px"
+                borderRadius="md">
+                <CardElement/>
+              </Box>
+              
+              
               {/* SUBMIT */}
               <Button
                 colorScheme="green"
                 size="lg"
                 mt={4}
-                onClick={submitOrder}
+                onClick={handleCheckout}
               >
                 Submit Order
               </Button>
-
-              <Button onClick={createPaymentIntent}>Test Stripe</Button>
+              
+              
             </VStack>
           </Box>
         </VStack>
