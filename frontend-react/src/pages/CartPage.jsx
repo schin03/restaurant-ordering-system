@@ -1,6 +1,7 @@
 import { useLayoutEffect } from 'react'
 import { useReducedMotion } from 'framer-motion'
 import { CartSection }  from '../components/sections/CartSection'
+import { CheckoutSection } from '../components/sections/CheckoutSection'
 import { MotionBox } from '../lib/chakra-motion'
 import { EASE_OUT } from '../lib/motion-presets'
 
@@ -18,6 +19,7 @@ export function CartPage() {
       transition={{ duration: reduceMotion ? 0 : 0.4, ease: EASE_OUT }}
     >
       <CartSection hideChinese />
+      <CheckoutSection hideChinese/>
     </MotionBox>
   )
 }
