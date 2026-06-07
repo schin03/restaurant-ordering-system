@@ -712,7 +712,7 @@ function MenuItemCard({
                             if (quantity <= 0) return null;
 
                             return {
-                              id: `${en}-${sizeLabel}`,
+                              menuItemId: `${en}-${sizeLabel}`,
                               en,
                               zh,
                               size: sizeLabel,
@@ -726,7 +726,7 @@ function MenuItemCard({
                           const updated = [...prev];
                           itemsToAdd.forEach((newItem) => {
                             const existing = updated.find(
-                              (item) => item.id === newItem.id
+                              (item) => item.menuitemId === newItem.menuItemId
                             );
 
                             if (existing) {

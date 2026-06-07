@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.app.dto.OrderRequest;
+import com.app.dto.Order;
 import com.app.service.OrderService;
 
 @RestController
@@ -22,19 +22,8 @@ public class OrderController {
     }
 
     @PostMapping
-    public String createOrder(@RequestBody OrderRequest orderRequest) {
-        double total = orderService.calculateTotal(orderRequest);
-        
-        System.out.println("ORDER RECEIVED");
-        System.out.println(orderRequest.getCustomerName());
-
-        for (var item : orderRequest.getItems()) {
-            System.out.println(item.getEn());
-        }
-
-        System.out.println("TOTAL: " + total);
-
-        return "Order received";
+    public Order createOrder(@RequestBody Order order) {
+        return orderService.saveOrder(order);
     }
     
     @GetMapping("/test")

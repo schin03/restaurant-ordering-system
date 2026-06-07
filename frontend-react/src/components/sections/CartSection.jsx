@@ -46,7 +46,7 @@ export function CartSection() {
               <VStack align="stretch" gap={0} separator={<Separator />}>
                 {cartItems.map((item) => (
                   <Flex
-                    key={item.id}
+                    key={item.menuItemId}
                     justify="space-between"
                     align="center"
                     p={5}
@@ -71,7 +71,7 @@ export function CartSection() {
                     <Flex align="center" gap={3}>
                       <Button
                         size="sm"
-                        onClick={() => decrementQuantity(item.id)}
+                        onClick={() => decrementQuantity(item.menuItemId)}
                       >
                         -
                       </Button>
@@ -82,7 +82,7 @@ export function CartSection() {
 
                       <Button
                         size="sm"
-                        onClick={() => incrementQuantity(item.id)}
+                        onClick={() => incrementQuantity(item.menuItemId)}
                         
                       >
                         +
