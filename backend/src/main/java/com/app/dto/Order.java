@@ -1,20 +1,47 @@
 package com.app.dto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
-public class OrderRequest {
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+
+
+@Entity
+@Table(name = "orders")
+public class Order {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private String customerName;
     private String phone;
     private String email;
+
     private String orderType;
+
     private String pickupTime;
     private String address;
+
     private String comments;
 
-    private List<OrderItemRequest> items;
+    @JsonManagedReference
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<OrderItem> items;
 
-    public OrderRequest() {
+    private double totalAmount;
+    private LocalDateTime createdAt;
+
+    public Order() {
+        this.createdAt = LocalDateTime.now();
     }
 
     public String getCustomerName() {
@@ -45,8 +72,12 @@ public class OrderRequest {
         return comments;
     }
 
-    public List<OrderItemRequest> getItems() {
+    public List<OrderItem> getItems() {
         return items;
+    }
+
+    public double getTotal() {
+        return totalAmount;
     }
 
     public void setCustomerName(String s) {
@@ -77,8 +108,12 @@ public class OrderRequest {
         comments = s;
     }
 
-    public void setItems(List<OrderItemRequest> items) {
+    public void setItems(List<OrderItem> items) {
         this.items = items;
+    }
+
+    public void setTotal(double total) {
+        totalAmount = total;
     }
 
 }

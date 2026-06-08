@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.app.dto.OrderRequest;
+import com.app.dto.Order;
 import com.app.service.OrderService;
 import com.stripe.Stripe;
 import com.stripe.model.PaymentIntent;
@@ -19,12 +19,16 @@ import com.stripe.param.PaymentIntentCreateParams;
 @RequestMapping("/api/payments")
 @CrossOrigin(origins = "http://localhost:5173")
 public class PaymentController {
+    private final OrderService orderService;
+
+    public PaymentController(OrderService os) {
+        orderService = os; 
+    }
 
     @PostMapping("/create-intent")
-    public Map<String, String> createPaymentIntent(@RequestBody OrderRequest req) throws Exception {
-        OrderService os = new OrderService();
+    public Map<String, String> createPaymentIntent(@RequestBody Order req) throws Exception {
     
-        double total = os.calculateTotal(req);
+        double total = orderService.calculateTotal(req);
         long stripeAmount = (long)(total * 100);
         
         Stripe.apiKey = "sk_test_51TeKq56E761x5qd6XAobh1KXE1GfTGWU0LmKrP2oyQr6ngoUUwn5DnGHiyXDWu5J524dDXfWGqDAH5aRQNEFG7pJ007bDxKRYf";
