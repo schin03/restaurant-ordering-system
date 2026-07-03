@@ -5,13 +5,13 @@ choose item from menu -> adjust amount in cart -> fill out information -> submit
 ## GIF EXAMPLE
 
 ### Adding to Cart
-![Demo](readme-gifs/bamboo-1.gif)
+<img src="readme-gifs/bamboo-1.gif" width="700px"/>
 
 ### Changing Cart Items
-![Demo](readme-gifs/bamboo-2.gif)
+<img src="readme-gifs/bamboo-2.gif" width="700px"/>
 
 ### Inputing Information
-![Demo](readme-gifs/bamboo-3.gif)
+<img src="readme-gifs/bamboo-3.gif" width="700px"/>
 
 ### Stored information
-![Demo](readme-gifs/bamboo-4.gif)
+<img src="readme-gifs/bamboo-4.gif" width="700px"/>
