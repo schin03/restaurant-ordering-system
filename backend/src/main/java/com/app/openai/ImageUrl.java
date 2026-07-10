@@ -1,6 +1,6 @@
 package com.app.openai;
 
-class ImageUrl {
+public class ImageUrl {
 
     private String url;
 
