@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "multer": "^2.2.0",
+    "openai": "^6.46.0"
+  }
+}
