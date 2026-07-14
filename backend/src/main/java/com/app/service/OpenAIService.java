@@ -36,7 +36,8 @@ public class OpenAIService {
 
         ChatMessage msg = new ChatMessage("user", List.of(textContent, imgContent));
 
-        ChatRequest req = new ChatRequest("gpt-4.1-mini", List.of(msg));
+        ChatRequest req;
+        req = new ChatRequest("gpt-4.1-mini", List.of(msg));
 
         String res = webClient.post()
                 .uri("/v1/chat/completions")

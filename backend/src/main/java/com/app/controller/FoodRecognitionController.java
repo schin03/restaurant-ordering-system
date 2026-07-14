@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.app.service.GeminiService;
 import com.app.service.ImageService;
 import com.app.service.OpenAIService;
 
@@ -15,19 +16,19 @@ import com.app.service.OpenAIService;
 public class FoodRecognitionController {
 
     private final ImageService imgService;
-    private final OpenAIService openAIService;
+    private final GeminiService geminiService;
+    //private final OpenAIService openAIService;
 
-    public FoodRecognitionController(ImageService imgService, OpenAIService openAIService) {
+    public FoodRecognitionController(ImageService imgService, GeminiService geminiService) {
         this.imgService = imgService;
-        this.openAIService = openAIService;
+        this.geminiService = geminiService;
     }
 
     @PostMapping("/recognizeFood")
     public ResponseEntity<?> recognizeFood(@RequestParam("image") MultipartFile img) {
         try {
             String base64Img = imgService.convertToBase64(img);
-
-            String res = openAIService.analyzeImage(base64Img);
+            String res = geminiService.analyzeImage(base64Img);
 
             return ResponseEntity.ok(res);
 
