@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.app.openai.ChatMessage;
@@ -12,7 +11,7 @@ import com.app.openai.ChatRequest;
 import com.app.openai.Content;
 import com.app.openai.ImageUrl;
 
-@Service
+//@Service
 public class OpenAIService {
 
     @Value("${openai.api.key}")
