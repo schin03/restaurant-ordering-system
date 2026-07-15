@@ -11,6 +11,9 @@ import com.app.gemini.Content;
 import com.app.gemini.GeminiRequest;
 import com.app.gemini.InlineData;
 import com.app.gemini.Part;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class GeminiService {
@@ -52,6 +55,8 @@ public class GeminiService {
 
         GeminiRequest req = new GeminiRequest(List.of(content));
 
+        ObjectMapper objectMapper = new ObjectMapper();
+
         String res = webClient.post()
                 .uri(uriBuilder -> uriBuilder
                 .path("/v1beta/models/gemini-3.1-flash-lite:generateContent")
@@ -66,8 +71,18 @@ public class GeminiService {
                                 .map(body -> new RuntimeException(body)))
                 .bodyToMono(String.class)
                 .block();
-
-        return res;
+        try {
+            JsonNode root = objectMapper.readTree(res);
+        
+            String text = root
+                        .path("candidates").get(0)
+                        .path("content")
+                        .path("parts").get(0)
+                        .path("text").asText();
+            return text;
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to parse Gemini response ", e);
+        }
     }
 
 }
