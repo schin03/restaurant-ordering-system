@@ -17,6 +17,7 @@ import com.app.model.MenuItem;
 import com.app.repository.MenuItemRepository;
 import com.app.service.GeminiService;
 import com.app.service.ImageService;
+import com.app.dto.PotentialFood;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -46,21 +47,17 @@ public class FoodRecognitionController {
             ObjectMapper mapper = new ObjectMapper();
             List<String> guesses = mapper.readValue(res, new TypeReference<List<String>>() {});
 
-            Set<MenuItem> matches = new LinkedHashSet<>();
+            Set<String> keywords = extractKeywords(guesses);
+            
+            List<MenuItem> candidates = getPotentialFoods(keywords);
 
-            for (String guess : guesses) {
-                
-                String[] words = guess.split(" ");
-                for (String word : words) {
-                    if (word.length() < 3) continue;
+            List<PotentialFood> dto = candidates.stream().map(
+                item -> new PotentialFood(item.getId(), item.getNameEn())
+            ).toList();
 
-                    List<MenuItem> results = menuItemRepository.findByNameEnContainingIgnoreCase(guess);
-                    matches.addAll(results);
-                    if (matches.size() >= 3) break;
-                }
-            }
+            
 
-            System.out.println(matches);
+
             return new ArrayList<>(matches);
 
         } catch (Exception e) {
@@ -73,6 +70,30 @@ public class FoodRecognitionController {
         List<MenuItem> res = menuItemRepository.findByNameEnContainingIgnoreCase("chicken");
         System.out.println(res);
         return res;
+    }
+
+    private Set<String> extractKeywords(List<String> guesses) {
+        Set<String> words = new LinkedHashSet<>();
+
+        for (String guess : guesses) {
+            String [] split = guess.toLowerCase().split("\\s+");
+            for (String word : split) {
+                if (word.length() < 3) continue;
+                words.add(word);
+            }
+        }
+        return words;
+    }
+
+    private List<MenuItem> getPotentialFoods(Set<String> keywords) {
+        Set<MenuItem> candidates = new LinkedHashSet<>();
+        for (String word : keywords) {
+            candidates.addAll(
+                menuItemRepository.findByNameEnContainingIgnoreCase(word)
+            );
+        }
+
+        return new ArrayList<>(candidates);
     }
 
 }
