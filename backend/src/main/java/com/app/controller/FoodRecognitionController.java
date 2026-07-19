@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,26 +41,38 @@ public class FoodRecognitionController {
     }
 
     @PostMapping("/recognizeFood")
-    public List<MenuItem> recognizeFood(@RequestParam("image") MultipartFile img) {
+    public List<Long> recognizeFood(@RequestParam("image") MultipartFile img) {
         try {
             String base64Img = imgService.convertToBase64(img);
             String res = geminiService.analyzeImage(base64Img);
 
             ObjectMapper mapper = new ObjectMapper();
-            List<String> guesses = mapper.readValue(res, new TypeReference<List<String>>() {});
-
+            List<String> guesses = mapper.readValue(res, new TypeReference<List<String>>() {
+            });
+            System.out.println(guesses);
             Set<String> keywords = extractKeywords(guesses);
-            
             List<MenuItem> candidates = getPotentialFoods(keywords);
 
             List<PotentialFood> dto = candidates.stream().map(
-                item -> new PotentialFood(item.getId(), item.getNameEn())
+                    item -> new PotentialFood(item.getId(), item.getNameEn())
             ).toList();
 
-            
+           
+            Map<PotentialFood, Integer> mappedScores = calcScores(dto, keywords);
 
+            List<PotentialFood> potentialFoods = mappedScores.entrySet()
+                                                    .stream()
+                                                    .sorted(
+                                                            Map.Entry.<PotentialFood, Integer>comparingByValue()
+                                                                    .reversed())
+                                                    .limit(5)
+                                                    .map(Map.Entry::getKey)
+                                                    .toList();
+            for (PotentialFood f : potentialFoods) {
+                System.out.println(f.getName() + " " + f.getId());
+            }
 
-            return new ArrayList<>(matches);
+            return geminiService.matchCandidates(base64Img, potentialFoods);
 
         } catch (Exception e) {
             return null;
@@ -76,9 +90,11 @@ public class FoodRecognitionController {
         Set<String> words = new LinkedHashSet<>();
 
         for (String guess : guesses) {
-            String [] split = guess.toLowerCase().split("\\s+");
+            String[] split = guess.toLowerCase().split("\\s+");
             for (String word : split) {
-                if (word.length() < 3) continue;
+                if (word.length() < 3) {
+                    continue;
+                }
                 words.add(word);
             }
         }
@@ -89,11 +105,27 @@ public class FoodRecognitionController {
         Set<MenuItem> candidates = new LinkedHashSet<>();
         for (String word : keywords) {
             candidates.addAll(
-                menuItemRepository.findByNameEnContainingIgnoreCase(word)
+                    menuItemRepository.findByNameEnContainingIgnoreCase(word)
             );
         }
 
         return new ArrayList<>(candidates);
+    }
+
+    private Map<PotentialFood, Integer> calcScores(List<PotentialFood> potentialFoods, Set<String> keywords) {
+        Map<PotentialFood, Integer> scores = new HashMap<>();
+
+        for (PotentialFood pf : potentialFoods) {
+            String name = pf.getName();
+            int score = 0;
+            for (String keyword : keywords) {
+                if (name.contains(keyword.toLowerCase())) {
+                    score++;
+                }
+            }
+            scores.put(pf, score);
+        }
+        return scores;
     }
 
 }
