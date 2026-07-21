@@ -43,10 +43,6 @@ public class OpenAIService {
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
                 .bodyValue(req)
                 .retrieve()
-                .onStatus(
-                    status -> status.isError(),
-                    response -> response.bodyToMono(String.class)
-                            .map(body -> new RuntimeException(body)))
                 .bodyToMono(String.class)
                 .block();
 

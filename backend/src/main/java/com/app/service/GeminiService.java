@@ -13,8 +13,8 @@ import com.app.gemini.GeminiRequest;
 import com.app.gemini.InlineData;
 import com.app.gemini.Part;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
@@ -71,12 +71,12 @@ public class GeminiService {
                 .block();
         try {
             JsonNode root = objectMapper.readTree(res);
-        
+
             String text = root
-                        .path("candidates").get(0)
-                        .path("content")
-                        .path("parts").get(0)
-                        .path("text").asText();
+                    .path("candidates").get(0)
+                    .path("content")
+                    .path("parts").get(0)
+                    .path("text").asText();
             return text;
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to parse Gemini response ", e);
@@ -88,22 +88,24 @@ public class GeminiService {
         ObjectMapper mapper = new ObjectMapper();
         try {
             String menuJson = mapper.writeValueAsString(candidates);
-            
             String prompt = """
-                    The uploaded image has already been analyzed.
-                    I want you to compare the image to the list of candidates that is uploaded.
-                    Return only a JSON array of 3 id's that you think is most similar to the image, with index 0 being the most similar. 
+                    There are 2 things being uploaded right now, an image which you have already analyzed, 
+                    and a list of potential foods that we have on our menu.
 
-                    Rules:
-                        - Return only the JSON array.
-                        - Do not include markdown.
-                        - Do not include explanations.
-                        - Do not include numbering.
-                        - Do not include any other text.
-                        - Use common restaurant menu item names.
+                    Here is the potential foods from our menu I want you to compare to the image:
+                    %s
+                    
+                    The uploaded list is a jsonMapped string which contains a food item's id that we store in our system
+                    and that food's name in our system. I want you to look at the image and look at the menu items we uploaded
+                    and see which of those uploaded menu item names looks the closest to the uploaded image. I want the output 
+                    to be the ids of the food in descending order of the most similar to least.
 
-                        Example output:
-                        [14, 12, 56]                
+                    For the response, I just want a JSON array of the ranked ids, but just of the top 3. 
+
+                    For example:
+                    input = [{"id":2, "name":"Spring Roll"}, {"id":14, "name":"Egg Roll"}]
+                    output = [2,14]
+
                     """.formatted(menuJson);
             Part imagePart = new Part(null, new InlineData("image/jpeg", img));
 
@@ -125,20 +127,19 @@ public class GeminiService {
                     .retrieve()
                     .bodyToMono(String.class)
                     .block();
-        
-                JsonNode root = objectMapper.readTree(res);
-            
-                String text = root
-                            .path("candidates").get(0)
-                            .path("content")
-                            .path("parts").get(0)
-                            .path("text").asText();
-                return mapper.readValue(text, new TypeReference<List<Long>>() {});
+
+            JsonNode root = objectMapper.readTree(res);
+
+            String text = root
+                    .path("candidates").get(0)
+                    .path("content")
+                    .path("parts").get(0)
+                    .path("text").asText();
+            return mapper.readValue(text, new TypeReference<List<Long>>() {
+            });
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to parse Gemini response ", e);
         }
     }
-
-
 
 }

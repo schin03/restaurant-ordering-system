@@ -1,11 +1,12 @@
 package com.app.controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,11 +16,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.app.dto.PotentialFood;
 import com.app.model.MenuItem;
 import com.app.repository.MenuItemRepository;
 import com.app.service.GeminiService;
 import com.app.service.ImageService;
-import com.app.dto.PotentialFood;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -53,24 +54,25 @@ public class FoodRecognitionController {
             Set<String> keywords = extractKeywords(guesses);
             List<MenuItem> candidates = getPotentialFoods(keywords);
 
-            List<PotentialFood> dto = candidates.stream().map(
+            Set<PotentialFood> dto = candidates.stream().map(
                     item -> new PotentialFood(item.getId(), item.getNameEn())
-            ).toList();
+            ).collect(Collectors.toSet());
 
-           
             Map<PotentialFood, Integer> mappedScores = calcScores(dto, keywords);
+            for (Map.Entry<PotentialFood, Integer> entry : mappedScores.entrySet()) {
+                PotentialFood food = entry.getKey();
+                Integer score = entry.getValue();
 
-            List<PotentialFood> potentialFoods = mappedScores.entrySet()
-                                                    .stream()
-                                                    .sorted(
-                                                            Map.Entry.<PotentialFood, Integer>comparingByValue()
-                                                                    .reversed())
-                                                    .limit(5)
-                                                    .map(Map.Entry::getKey)
-                                                    .toList();
-            for (PotentialFood f : potentialFoods) {
-                System.out.println(f.getName() + " " + f.getId());
+                System.out.println(food.getName() + " -> " + score);
             }
+            List<PotentialFood> potentialFoods = mappedScores.entrySet()
+                    .stream()
+                    .sorted(
+                            Map.Entry.<PotentialFood, Integer>comparingByValue()
+                                    .reversed())
+                    .limit(5)
+                    .map(Map.Entry::getKey)
+                    .toList();
 
             return geminiService.matchCandidates(base64Img, potentialFoods);
 
@@ -112,20 +114,32 @@ public class FoodRecognitionController {
         return new ArrayList<>(candidates);
     }
 
-    private Map<PotentialFood, Integer> calcScores(List<PotentialFood> potentialFoods, Set<String> keywords) {
+    private Map<PotentialFood, Integer> calcScores(Set<PotentialFood> potentialFoods, Set<String> keywords) {
         Map<PotentialFood, Integer> scores = new HashMap<>();
-
+        System.out.println(keywords);
         for (PotentialFood pf : potentialFoods) {
-            String name = pf.getName();
+            String name = pf.getName().toLowerCase();
             int score = 0;
             for (String keyword : keywords) {
-                if (name.contains(keyword.toLowerCase())) {
-                    score++;
+                String normalizedKeyword = normalizedWord(keyword);
+                for (String word : name.split("\\s+")) {
+                    word = word.replaceAll("[^a-z]", "");
+                    if (word.equals(normalizedKeyword)) {
+                        score++;
+                        break;
+                    }
                 }
             }
             scores.put(pf, score);
         }
         return scores;
+    }
+
+    private String normalizedWord(String word) {
+        if (word.endsWith("s")) {
+            return word.substring(0, word.length() - 1);
+        }
+        return word;
     }
 
 }
