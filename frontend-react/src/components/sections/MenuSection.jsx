@@ -317,6 +317,8 @@ function MenuItemCard({
   return (
     <>
       <Box
+        id={`menu-item-${num}`}
+        scrollMarginTop="100px"
         /* Disabled entire box as selection and reduced to single button within box */
         // cursor={hasPhoto ? 'pointer' : undefined}
         // onClick={hasPhoto ? activatePhoto : undefined}
