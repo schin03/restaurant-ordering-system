@@ -12,7 +12,7 @@ import { MdCameraAlt, MdAdd, MdClose } from "react-icons/md";
 import { MENU_SECTIONS } from "../data/menuItems";
 import { useNavigate } from "react-router-dom";
 
-const BACKEND_URL = "http://localhost:8080";
+const BACKEND_URL = "https://restaurant-ordering-system-9ua7.onrender.com";
 
 const ALL_MENU_ITEMS = MENU_SECTIONS.flatMap((section) =>
   section.items.map((item) => ({

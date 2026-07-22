@@ -17,7 +17,7 @@ import com.stripe.param.PaymentIntentCreateParams;
 
 @RestController
 @RequestMapping("/api/payments")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "https://ordering-system-henna.vercel.app/")
 public class PaymentController {
     private final OrderService orderService;
 

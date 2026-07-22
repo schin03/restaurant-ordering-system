@@ -25,7 +25,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 //add vercel endpoint too
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "https://ordering-system-henna.vercel.app/")
 @RestController
 @RequestMapping("/api")
 public class FoodRecognitionController {
