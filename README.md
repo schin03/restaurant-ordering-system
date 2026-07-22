@@ -3,6 +3,8 @@
 choose item from menu -> adjust amount in cart -> fill out information -> submit order -> process order -> save information to db 
 
 ## GIF EXAMPLE
+### Using Image Recognition
+<img src="readme-gifs/bamboo-5.gif" width="700px"/>
 
 ### Adding to Cart
 <img src="readme-gifs/bamboo-1.gif" width="700px"/>
